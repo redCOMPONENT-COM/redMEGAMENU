@@ -364,13 +364,15 @@
 				}
 			}
 
-			$('.shopbMegaMenu').on('click', '.accordion', function(){
+			$('.shopbMegaMenu').on('click', '.accordion-toggle', function(){
 				var $collapse = $(this).parent().parent().find('.collapse');
 				if ($collapse.hasClass('in')){
 					$collapse.css({'overflow':'hidden'});
 				}
-			}).on('shown.bs.collapse', '.accordion', function(){
-				$(this).parent().parent().find('.collapse').css({'overflow':'visible'});
+			}).on('hidden.bs.collapse', '.accordion', function(item){
+				$(item.target).css({'overflow':'hidden'});
+			}).on('shown.bs.collapse', '.accordion', function(item){
+				$(item.target).css({'overflow':'visible'});
 			});
 		}
 
