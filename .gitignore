@@ -39,12 +39,6 @@ phing-latest.phar
 /Gemfile
 /Gemfile.lock
 
-# phpunit
-tests/unit/phpunit.xml
-
-# composer
-build/vendor/*
-
 # LESS Transpiler
 build/npm-debug.log
 
