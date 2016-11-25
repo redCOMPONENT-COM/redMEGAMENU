@@ -1,6 +1,6 @@
 {
 	"wwwDir"        : "/home/travis/build/redCOMPONENT-COM/redmegamenu/tests/joomla-cms3",
-	"release_dir"   : "./releases/",
+	"release_dir"   : "../releases/",
 	"watchInterval" : "500",
 	"defaultTasks"  : ["copy", "watch"],
 	"browserConfig" : {
