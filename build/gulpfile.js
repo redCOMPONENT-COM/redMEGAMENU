@@ -17,7 +17,7 @@ gulp.task('release', function (cb) {
 	var fileName = name;
 
 	// We will output where release package is going so it is easier to find
-	console.log('Creating new release file in: ' + path.join(config.release_dir, fileName));
+	console.log('Creating new release file in: ' + path.join(config.release_dir, fileName + '.zip'));
 
 	if (!argv.skipVersion) {
 		fs.readFile('../extensions/modules/' + name + '/' + name + '.xml', function(err, data) {
