@@ -1,8 +1,8 @@
 {
 	"wwwDir"        : "/home/travis/build/redCOMPONENT-COM/redmegamenu/tests/joomla-cms3",
-	"release_dir"   : "../tests/releases/",
+	"release_dir"   : "./releases/",
 	"watchInterval" : "500",
-	"defaultTasks"  : ["copy", "watch", "copyRedcore", "watchRedcore", "browser-sync"],
+	"defaultTasks"  : ["copy", "watch"],
 	"browserConfig" : {
 		"proxy" : "localhost"
 	}
