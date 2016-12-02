@@ -11,6 +11,7 @@
     <files>
         <filename module="mod_redmegamenu">mod_redmegamenu.php</filename>
         <folder>tmpl</folder>
+        <folder>fields</folder>
         <filename>helper.php</filename>
         <filename>index.html</filename>
         <filename>mod_redmegamenu.xml</filename>
@@ -84,6 +85,20 @@
                         label="MOD_REDMEGAMENU_INDICATORSECONDLEVEL_LABEL"
                         default="+"
                         type="text"
+                        />
+                <field
+                        name="dropdownLevel"
+                        default="1"
+                        type="number"
+                        min="1"
+                        label="MOD_REDMEGAMENU_DROPDOWN_LEVEL_LABEL"
+                        description="MOD_REDMEGAMENU_DROPDOWN_LEVEL_DESC"
+                />
+                <field
+                        name="ignoreItems"
+                        type="menuitems"
+                        label="MOD_REDMEGAMENU_IGNORE_ITEMS_LABEL"
+                        description="MOD_REDMEGAMENU_IGNORE_ITEMS_DESC"
                         />
                 <field
                         name="showSpeed"

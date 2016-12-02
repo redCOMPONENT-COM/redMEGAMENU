@@ -12,7 +12,7 @@ defined('_JEXEC') or die;
 /**
  * Class RedMegaMenuModuleHelper
  *
- * @since  1.0
+ * @since  1.0.0
  */
 class RedMegaMenuModuleHelper extends JModuleHelper
 {
@@ -20,6 +20,8 @@ class RedMegaMenuModuleHelper extends JModuleHelper
 	 * Getting all modules
 	 *
 	 * @return  array
+	 *
+	 * @since   1.0.0
 	 */
 	public static function &getAllModules()
 	{
@@ -30,7 +32,7 @@ class RedMegaMenuModuleHelper extends JModuleHelper
 			return $modules;
 		}
 
-		$modules = array();
+		$modules    = array();
 		$allModules = parent::load();
 
 		if ($allModules)
@@ -50,7 +52,7 @@ class RedMegaMenuModuleHelper extends JModuleHelper
  *
  * @package     Site
  * @subpackage  mod_redmegamenu
- * @since       1.0
+ * @since       1.0.0
  */
 class ModRedMegaMenuHelper
 {
@@ -60,38 +62,41 @@ class ModRedMegaMenuHelper
 	 * @param   \Joomla\Registry\Registry  &$params  The module options.
 	 *
 	 * @return  array
+	 *
+	 * @since   1.0.0
 	 */
 	public static function getList(&$params)
 	{
-		$app = JFactory::getApplication();
-		$menu = $app->getMenu();
-		$items   = $menu->getItems('menutype', $params->get('menutype'));
-		$lastitem = 0;
+		$app      = JFactory::getApplication();
+		$menu     = $app->getMenu();
+		$items    = $menu->getItems('menutype', $params->get('menutype'));
+		$lastItem = 0;
+		$dLevel   = $params->get('dropdownLevel', 1);
 
 		if ($items)
 		{
 			do
 			{
-				$i = key($items);
-				$item = current($items);
+				$i                = key($items);
+				$item             = current($items);
 				$item->deeper     = false;
 				$item->shallower  = false;
 				$item->level_diff = 0;
+				$levels[]         = $item->level;
+				$levels           = array_unique($levels);
 
-				if (isset($items[$lastitem]))
+				if (isset($items[$lastItem]))
 				{
-					$items[$lastitem]->deeper     = ($item->level > $items[$lastitem]->level);
-					$items[$lastitem]->shallower  = ($item->level < $items[$lastitem]->level);
-					$items[$lastitem]->level_diff = ($items[$lastitem]->level - $item->level);
+					$items[$lastItem]->deeper     = ($item->level > $items[$lastItem]->level);
+					$items[$lastItem]->shallower  = ($item->level < $items[$lastItem]->level);
+					$items[$lastItem]->level_diff = ($items[$lastItem]->level - $item->level);
 				}
 
-				$lastitem = $i;
+				$lastItem = $i;
 				self::setValues($item);
-				$pattern = '/\[mega\]/';
 
-				if (preg_match($pattern, $item->title, $result))
+				if ($dLevel >= count($levels))
 				{
-					$item->title = preg_replace($pattern, '', $item->title);
 					$item->mega = true;
 
 					self::getListForMegamenu($items, $params);
@@ -103,11 +108,11 @@ class ModRedMegaMenuHelper
 			}
 			while(next($items) !== false);
 
-			if (isset($items[$lastitem]))
+			if (isset($items[$lastItem]))
 			{
-				$items[$lastitem]->deeper     = (1 > $items[$lastitem]->level);
-				$items[$lastitem]->shallower  = (1 < $items[$lastitem]->level);
-				$items[$lastitem]->level_diff = ($items[$lastitem]->level - 1);
+				$items[$lastItem]->deeper     = (1 > $items[$lastItem]->level);
+				$items[$lastItem]->shallower  = (1 < $items[$lastItem]->level);
+				$items[$lastItem]->level_diff = ($items[$lastItem]->level - 1);
 			}
 		}
 
@@ -117,36 +122,38 @@ class ModRedMegaMenuHelper
 	/**
 	 * Get List For Mega menu
 	 *
-	 * @param   array                      $items   Menu Items
+	 * @param   array                      &$items  Menu Items
 	 * @param   \Joomla\Registry\Registry  $params  Module params
 	 *
-	 * @throws Exception
+	 * @throws  Exception
 	 *
 	 * @return  void
+	 *
+	 * @since   1.0.0
 	 */
 	public static function getListForMegamenu(&$items, $params)
 	{
-		$parent = current($items);
+		$parent               = current($items);
 		$parent->displayLevel = $parent->level + 1;
-		$parent->replaceItem = false;
-		$minimalLevel = $parent->level;
-		$countChilds = array();
-		$ids = array();
-		$images = array();
-		$parent->hasSprite = false;
-		$parent->activePath = $params->get('activePath', array());
-		$parent->activeId = $params->get('activeId', 0);
-		$useImageSprite = (int) $params->get('useImageSprite', 1);
-		$imageWidth = (int) $params->get('imageWidth', 65);
-		$imageHeight = (int) $params->get('imageHeight', 65);
-		$lastItem = 0;
-		$childs = array();
-		$app = JFactory::getApplication();
-		$menu = $app->getMenu();
+		$parent->replaceItem  = false;
+		$minimalLevel         = $parent->level;
+		$countChilds          = array();
+		$ids                  = array();
+		$images               = array();
+		$parent->hasSprite    = false;
+		$parent->activePath   = $params->get('activePath', array());
+		$parent->activeId     = $params->get('activeId', 0);
+		$useImageSprite       = (int) $params->get('useImageSprite', 1);
+		$imageWidth           = (int) $params->get('imageWidth', 65);
+		$imageHeight          = (int) $params->get('imageHeight', 65);
+		$lastItem             = 0;
+		$childs               = array();
+		$app                  = JFactory::getApplication();
+		$menu                 = $app->getMenu();
 
-		while(next($items) !== false)
+		while (next($items) !== false)
 		{
-			$i = key($items);
+			$i     = key($items);
 			$child = current($items);
 
 			if ($parent->level >= $child->level)
@@ -164,12 +171,12 @@ class ModRedMegaMenuHelper
 
 			$countChilds[$child->parent_id]++;
 
-			$child->deeper     = false;
-			$child->shallower  = false;
-			$child->level_diff = 0;
+			$child->deeper        = false;
+			$child->shallower     = false;
+			$child->level_diff    = 0;
 			$child->relationLevel = $relationLevel;
-			$ids[$child->id] = $i;
-			$child->parent = (boolean) $menu->getItems('parent_id', (int) $child->id, true);
+			$ids[$child->id]      = $i;
+			$child->parent        = (boolean) $menu->getItems('parent_id', (int) $child->id, true);
 
 			if (isset($childs[$lastItem]))
 			{
@@ -187,16 +194,16 @@ class ModRedMegaMenuHelper
 
 				if ($child->menu_image != '' && JFile::exists($imagePath))
 				{
-					$filename      = pathinfo($imagePath, PATHINFO_FILENAME);
-					$fileExtension = pathinfo($imagePath, PATHINFO_EXTENSION);
-					$thumbFileName = $filename . '_' . $imageWidth . 'x' . $imageHeight . '.' . $fileExtension;
+					$filename         = pathinfo($imagePath, PATHINFO_FILENAME);
+					$fileExtension    = pathinfo($imagePath, PATHINFO_EXTENSION);
+					$thumbFileName    = $filename . '_' . $imageWidth . 'x' . $imageHeight . '.' . $fileExtension;
 					$imageThumbFolder = JPATH_ROOT . '/cache/mod_redmegamenu';
-					$imageThumbPath = $imageThumbFolder . '/thumbs/' . $thumbFileName;
-					$thumb = false;
+					$imageThumbPath   = $imageThumbFolder . '/thumbs/' . $thumbFileName;
+					$thumb            = false;
 
 					if (!JFile::exists($imageThumbPath))
 					{
-						$image = new JImage($imagePath);
+						$image  = new JImage($imagePath);
 						$thumbs = $image->createThumbs(array($imageWidth . 'x' . $imageHeight), JImage::CROP_RESIZE, $imageThumbFolder);
 
 						if (count($thumbs))
@@ -233,23 +240,25 @@ class ModRedMegaMenuHelper
 			$childs[$lastItem]->level_diff = ($childs[$lastItem]->relationLevel - 1);
 		}
 
-		$parent->childs = $childs;
+		$parent->childs      = $childs;
 		$parent->countChilds = $countChilds;
 	}
 
 	/**
 	 * Set menu item values
 	 *
-	 * @param   object  $item  Menu item
+	 * @param   object  &$item  Menu item
 	 *
-	 * @throws Exception
+	 * @throws  Exception
 	 *
 	 * @return  void
+	 *
+	 * @since   1.0.0
 	 */
 	public static function setValues(&$item)
 	{
-		$app = JFactory::getApplication();
-		$menu = $app->getMenu();
+		$app          = JFactory::getApplication();
+		$menu         = $app->getMenu();
 		$item->parent = (boolean) $menu->getItems('parent_id', (int) $item->id, true);
 		$item->active = false;
 		$item->flink  = $item->link;
@@ -289,17 +298,17 @@ class ModRedMegaMenuHelper
 
 		// We prevent the double encoding because for some reason the $item is shared for menu modules and we get double encoding
 		// when the cause of that is found the argument should be removed
+		$pattern            = '/\[modid=([0-9]+)\]/';
 		$item->title        = htmlspecialchars($item->title, ENT_COMPAT, 'UTF-8', false);
 		$item->anchor_css   = htmlspecialchars($item->params->get('menu-anchor_css', ''), ENT_COMPAT, 'UTF-8', false);
 		$item->anchor_title = htmlspecialchars($item->params->get('menu-anchor_title', ''), ENT_COMPAT, 'UTF-8', false);
 		$item->menu_image   = $item->params->get('menu_image', '') ?
 			htmlspecialchars($item->params->get('menu_image', ''), ENT_COMPAT, 'UTF-8', false) : '';
-		$pattern = '/\[modid=([0-9]+)\]/';
 
 		if (preg_match($pattern, $item->title, $result))
 		{
 			$item->title = preg_replace($pattern, '', $item->title);
-			$modules = &RedMegaMenuModuleHelper::getAllModules();
+			$modules     = &RedMegaMenuModuleHelper::getAllModules();
 
 			if (isset($modules[$result[1]]) && $modules[$result[1]]->module != 'mod_redmegamenu')
 			{
@@ -329,15 +338,17 @@ class ModRedMegaMenuHelper
 	 * @param   string  $style     Style for module
 	 *
 	 * @return string with HTML
+	 *
+	 * @since   1.0.0
 	 */
 	public static function generateModuleById($moduleId, $style = 'xhtml')
 	{
 		$attribs['style'] = $style;
-		$modules = &MegaMenuModuleHelper::getAllModules();
+		$modules          = &MegaMenuModuleHelper::getAllModules();
 
 		// Get the title of the module to load
 		$modTitle = $modules[$moduleId]->title;
-		$modName = $modules[$moduleId]->module;
+		$modName  = $modules[$moduleId]->module;
 
 		// Load the module
 		if (JModuleHelper::isEnabled($modName))
@@ -354,6 +365,8 @@ class ModRedMegaMenuHelper
 	 * Get active menu item.
 	 *
 	 * @return  object
+	 *
+	 * @since   1.0.0
 	 */
 	public static function getActive()
 	{
@@ -382,6 +395,8 @@ class ModRedMegaMenuHelper
 	 * @param   string  $output  Name of class for sprite
 	 *
 	 * @return  bool
+	 *
+	 * @since   1.0.0
 	 */
 	public static function createSprite($files = array(), $width = 65, $height = 65, $output = 'redmegamenu_sprite')
 	{
@@ -390,10 +405,10 @@ class ModRedMegaMenuHelper
 			return false;
 		}
 
-		$md5 = md5(serialize(func_get_args()));
-		$nameFile = $output . '-' . $md5;
+		$md5        = md5(serialize(func_get_args()));
+		$nameFile   = $output . '-' . $md5;
 		$spritePath = JPATH_ROOT . '/cache/mod_redmegamenu/' . $nameFile;
-		$urlPath = JUri::root() . 'cache/mod_redmegamenu/' . $nameFile;
+		$urlPath    = JUri::root() . 'cache/mod_redmegamenu/' . $nameFile;
 
 		if (!JFile::exists($spritePath . '.css') || !JFile::exists($spritePath . '.png'))
 		{
@@ -407,8 +422,9 @@ class ModRedMegaMenuHelper
 			imagefill($im, 0, 0, $alpha);
 
 			// Append images to sprite and generate CSS lines
-			$i = 0;
-			$css = '.' . $output . '{width:' . $width . 'px;height:' . $height . 'px;background:url(' . $nameFile . ".png) no-repeat 0px " . $height . "px #dfdfdf}\n";
+			$i   = 0;
+			$css = '.' . $output . '{width:' . $width . 'px;height:' . $height .
+				'px;background:url(' . $nameFile . ".png) no-repeat 0px " . $height . "px #dfdfdf}\n";
 
 			foreach ($files as $key => $path)
 			{
@@ -456,6 +472,8 @@ class ModRedMegaMenuHelper
 	 * @param   int     $parentId    Use parent id for filter redshop items
 	 *
 	 * @return  int
+	 *
+	 * @since   1.0.0
 	 */
 	public static function displayLevel(&$items, $parentItem, $level = 2, $parentId = 0)
 	{
@@ -464,11 +482,11 @@ class ModRedMegaMenuHelper
 			return $parentItem->lastItem;
 		}
 
-		$countItems = 0;
-		$isLevel = false;
-		$countColumns = $parentItem->pluginParams->get('countColumns', 4);
-		$numberSpan = round(12 / $countColumns, 0, PHP_ROUND_HALF_DOWN);
-		$itemsInColumn = 0;
+		$countItems     = 0;
+		$isLevel        = false;
+		$countColumns   = $parentItem->pluginParams->get('countColumns', 4);
+		$numberSpan     = round(12 / $countColumns, 0, PHP_ROUND_HALF_DOWN);
+		$itemsInColumn  = 0;
 		$itemsPerColumn = array();
 
 		if ($level == 2)
@@ -510,10 +528,10 @@ class ModRedMegaMenuHelper
 			}
 
 			$parentItem->lastItem = $i;
-			$key = $parentItem->id . '-' . $item->id;
-			$class = array('item-' . $key, 'level-item-' . $level);
-			$attr = array('href' => $item->flink);
-			$item->browserNav = $parentItem->browserNav;
+			$key                  = $parentItem->id . '-' . $item->id;
+			$class                = array('item-' . $key, 'level-item-' . $level);
+			$attr                 = array('href' => $item->flink);
+			$item->browserNav     = $parentItem->browserNav;
 
 			if ($item->deeper)
 			{
@@ -673,6 +691,8 @@ class ModRedMegaMenuHelper
 	 * @param   array  $attr  Array link attributes
 	 *
 	 * @return  string
+	 *
+	 * @since   1.0.0
 	 */
 	public static function getLinkAttributes($attr)
 	{
@@ -695,6 +715,8 @@ class ModRedMegaMenuHelper
 	 * @param   array   $attr  Array item attributes
 	 *
 	 * @return  array
+	 *
+	 * @since   1.0.0
 	 */
 	public static function setBrowserNav($item, $attr = array())
 	{
@@ -712,5 +734,40 @@ class ModRedMegaMenuHelper
 		}
 
 		return $attr;
+	}
+
+	/**
+	 * Ajax function for getting menu items for given menu type.
+	 *
+	 * @return  object  JSON response.
+	 *
+	 * @since   1.0.1
+	 */
+	public static function getMenuItemsAjax()
+	{
+		$app     = JFactory::getApplication();
+		$input   = $app->input;
+		$type    = $input->getString('menutype', '');
+		$items   = array();
+		$options = array();
+
+		if (!empty($menu))
+		{
+			$menu  = $app->getMenu();
+			$items = $menu->getItems('menutype', $type);
+		}
+
+		if (!empty($items))
+		{
+			foreach ($items as $item)
+			{
+				$options[] = JHtml::_('select.option', $item->id, $item->title);
+			}
+		}
+
+		$return       = new stdClass;
+		$return->html = implode('', $options);
+
+		return $return;
 	}
 }
