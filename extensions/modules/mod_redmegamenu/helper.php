@@ -71,7 +71,7 @@ class ModRedMegaMenuHelper
 		$menu     = $app->getMenu();
 		$items    = $menu->getItems('menutype', $params->get('menutype'));
 		$lastItem = 0;
-		$dLevel   = $params->get('dropdownLevel', 1);
+		$ignore   = $params->get('ignoreItems', array());
 
 		if ($items)
 		{
@@ -95,7 +95,7 @@ class ModRedMegaMenuHelper
 				$lastItem = $i;
 				self::setValues($item);
 
-				if ($dLevel >= count($levels))
+				if (!in_array($item->id, $ignore))
 				{
 					$item->mega = true;
 
@@ -106,7 +106,7 @@ class ModRedMegaMenuHelper
 					$item->mega = false;
 				}
 			}
-			while(next($items) !== false);
+			while (next($items) !== false);
 
 			if (isset($items[$lastItem]))
 			{
@@ -150,16 +150,52 @@ class ModRedMegaMenuHelper
 		$childs               = array();
 		$app                  = JFactory::getApplication();
 		$menu                 = $app->getMenu();
+		$dLevel               = $params->get('dropdownLevel', 1);
+		$lvlCounter           = array();
+		$maxLevel             = -1;
 
 		while (next($items) !== false)
 		{
-			$i     = key($items);
-			$child = current($items);
+			$i            = key($items);
+			$child        = current($items);
+			$lvlCounter[] = $child->level;
+			$lvlCounter   = array_unique($lvlCounter);
 
 			if ($parent->level >= $child->level)
 			{
+				if (empty($childs))
+				{
+					$parent->parent     = false;
+					$parent->deeper     = false;
+					$parent->shallower  = false;
+					$parent->level_diff = 0;
+				}
+
 				prev($items);
 				break;
+			}
+
+			if (count($lvlCounter) > $dLevel)
+			{
+				if ($maxLevel == -1)
+				{
+					$maxLevel = $child->level;
+				}
+
+				if ($child->level >= $maxLevel && $maxLevel != -1)
+				{
+					if (empty($childs) && (!isset($items[$i + 1]) || $items[$i + 1]->level <= $parent->level))
+					{
+						$parent->parent     = false;
+						$parent->deeper     = false;
+						$parent->shallower  = false;
+						$parent->level_diff = 0;
+					}
+
+					prev($items);
+					unset($items[$i]);
+					continue;
+				}
 			}
 
 			$relationLevel = $parent->level + ($child->level - $minimalLevel);

@@ -48,23 +48,105 @@ class JFormFieldMenuitems extends JFormFieldList
 			function reloadMenuItems()
 			{
 				var menutype = jQuery(\'#jform_params_menutype\').val();
-				jQuery.ajax({
-					url : \'index.php?option=com_ajax&module=redmegamenu&method=getMenuItems&format=json\',
-					data : {
-						menutype : menutype
-					},
-					dataType: \'json\'
-				}).done(function(e) {
-					if (e.success)
-					{
-						jQuery(\'#menuitems\').find(\'select\').html(e.data.html).trigger(\'liszt:updated\');
-					}
-				});
+				jQuery(\'#menuitems\').find(\'optgroup\').attr(\'disabled\', \'disabled\');
+				jQuery(\'#\' + menutype).removeAttr(\'disabled\');
+				jQuery(\'#menuitems\').find(\'select\').trigger(\'liszt:updated\');
 			}
 		';
 		$doc->addScriptDeclaration($script);
 
-		return '<span id="menuitems">' . parent::getInput() . '</span>';
+		$groups  = array();
+		$options = $this->getOptions();
+
+		foreach ($options as $option)
+		{
+			if (!empty($option->type_id) && !empty($option->type))
+			{
+				if (!isset($groups[$option->type_id]))
+				{
+					$groups[$option->type_id] = array('id' => $option->type_id, 'text' => $option->type);
+					$groups[$option->type_id]['items'] = array($option);
+				}
+				else
+				{
+					$groups[$option->type_id]['items'][] = $option;
+				}
+			}
+			elseif (!empty($option->value) && !empty($option->text))
+			{
+				if (!isset($groups['unsorted']))
+				{
+					$groups['unsorted'] = array('id' => '', 'text' => '');
+					$groups['unsorted']['items'] = array(JHtml::_('select.option', $option->value, $option->text));
+				}
+				else
+				{
+					$groups['unsorted']['items'][] = JHtml::_('select.option', $option->value, $option->text);
+				}
+			}
+		}
+
+		foreach ($groups as $id => $group)
+		{
+			if ($id == 'unsorted')
+			{
+				continue;
+			}
+
+			$items     = $group['items'];
+			$children  = array();
+			$treeItems = array();
+
+			foreach ($items as $item)
+			{
+				$item->value = $item->id;
+				$item->text  = $item->title;
+				$parent      = $item->parent_id;
+
+				if (isset($children[$parent]))
+				{
+					$list = $children[$parent];
+				}
+				else
+				{
+					$list = array();
+				}
+
+				array_push($list, $item);
+				$children[$parent] = $list;
+			}
+
+			// Add as options
+			$list = JHtml::_('menu.treerecurse', 1, '', array(), $children, 9999, 0, 0);
+
+			foreach ($list as $i)
+			{
+				$i->treename = JString::str_ireplace('&#160;', '-', $i->treename);
+				$treeItems[] = JHtml::_('select.option', $i->id, $i->treename);
+			}
+
+			$groups[$id]['items'] = $treeItems;
+		}
+
+		// Compute the current selected values
+		$selected = $this->value;
+
+		$attr = '';
+
+		// Initialize some field attributes.
+		$attr .= $this->element['class'] ? ' class="' . (string) $this->element['class'] . '"' : '';
+		$attr .= $this->element['size'] ? ' size="' . (int) $this->element['size'] . '"' : '';
+
+		// Initialize JavaScript field attributes.
+		$attr .= $this->element['onchange'] ? ' onchange="' . (string) $this->element['onchange'] . '"' : '';
+
+		// Initialize multiple value
+		$attr .= $this->element['multiple'] ? ' multiple="true"' : '';
+
+		return '<span id="menuitems">' . JHtml::_(
+			'select.groupedlist', $groups, $this->name,
+			array('id' => $this->id, 'group.id' => 'id', 'list.attr' => $attr, 'list.select' => $selected)
+		) . '</span>';
 	}
 
 	/**
@@ -82,56 +164,20 @@ class JFormFieldMenuitems extends JFormFieldList
 
 		$query->select(
 			array(
-				$db->qn('m.id', 'value'),
-				$db->qn('m.title', 'text'),
-				$db->qn('mt.menutype', 'id'),
+				$db->qn('m.id', 'id'),
+				$db->qn('m.title', 'title'),
+				$db->qn('m.parent_id', 'parent_id'),
+				$db->qn('m.lft', 'lft'),
+				$db->qn('mt.menutype', 'type_id'),
 				$db->qn('mt.title', 'type')
 			)
 		)
 			->from($db->qn('#__menu', 'm'))
 			->innerJoin($db->qn('#__menu_types', 'mt') . ' ON ' . $db->qn('m.menutype') . ' = ' . $db->qn('mt.menutype'))
-			->where($db->qn('published') . ' = 1');
+			->where($db->qn('published') . ' = 1')
+			->order($db->qn('m.lft') . ' ASC');
 		$items = array_merge($options, $db->setQuery($query)->loadObjectList());
 
-		if (!empty($items))
-		{
-			$groups = array();
-
-			foreach ($items as $item)
-			{
-				if (!isset($groups[$item->type]))
-				{
-					$groups[$item->id]        = new stdClass;
-					$groups[$item->id]->title = $item->type;
-					$groups[$item->id]->items = array($item);
-				}
-				else
-				{
-					$groups[$item->id]->items[] = $item;
-				}
-			}
-
-			ksort($groups, SORT_ASC);
-
-			foreach ($groups as $id => $group)
-			{
-				$options[] = JHtml::_(
-					'select.optgroup',
-					$group->title
-				);
-
-				foreach ($items as $item)
-				{
-					$options[] = JHtml::_('select.option', $item->value, $item->text);
-				}
-
-				$options[] = JHtml::_(
-					'select.optgroup',
-					$group
-				);
-			}
-		}
-
-		return $options;
+		return $items;
 	}
 }

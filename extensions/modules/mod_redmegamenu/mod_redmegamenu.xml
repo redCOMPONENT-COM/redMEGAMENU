@@ -97,6 +97,7 @@
                 <field
                         name="ignoreItems"
                         type="menuitems"
+                        multiple="true"
                         label="MOD_REDMEGAMENU_IGNORE_ITEMS_LABEL"
                         description="MOD_REDMEGAMENU_IGNORE_ITEMS_DESC"
                         />
