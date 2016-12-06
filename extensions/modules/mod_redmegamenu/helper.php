@@ -163,14 +163,6 @@ class ModRedMegaMenuHelper
 
 			if ($parent->level >= $child->level)
 			{
-				if (empty($childs))
-				{
-					$parent->parent     = false;
-					$parent->deeper     = false;
-					$parent->shallower  = false;
-					$parent->level_diff = 0;
-				}
-
 				prev($items);
 				break;
 			}
@@ -184,14 +176,6 @@ class ModRedMegaMenuHelper
 
 				if ($child->level >= $maxLevel && $maxLevel != -1)
 				{
-					if (empty($childs) && (!isset($items[$i + 1]) || $items[$i + 1]->level <= $parent->level))
-					{
-						$parent->parent     = false;
-						$parent->deeper     = false;
-						$parent->shallower  = false;
-						$parent->level_diff = 0;
-					}
-
 					prev($items);
 					unset($items[$i]);
 					continue;
@@ -212,7 +196,15 @@ class ModRedMegaMenuHelper
 			$child->level_diff    = 0;
 			$child->relationLevel = $relationLevel;
 			$ids[$child->id]      = $i;
-			$child->parent        = (boolean) $menu->getItems('parent_id', (int) $child->id, true);
+
+			if (count($lvlCounter) < $dLevel)
+			{
+				$child->parent = (boolean) $menu->getItems('parent_id', (int) $child->id, true);
+			}
+			else
+			{
+				$child->parent = false;
+			}
 
 			if (isset($childs[$lastItem]))
 			{
@@ -222,7 +214,7 @@ class ModRedMegaMenuHelper
 			}
 
 			$lastItem = $i;
-			self::setValues($child);
+			self::setValues($child, count($lvlCounter), $dLevel);
 
 			if ($useImageSprite && $child->level == 2)
 			{
@@ -283,7 +275,9 @@ class ModRedMegaMenuHelper
 	/**
 	 * Set menu item values
 	 *
-	 * @param   object  &$item  Menu item
+	 * @param   object  &$item       Menu item
+	 * @param   int     $lvlCounter  Menu different level counter
+	 * @param   int     $dLevel      Deepest allowed level
 	 *
 	 * @throws  Exception
 	 *
@@ -291,11 +285,20 @@ class ModRedMegaMenuHelper
 	 *
 	 * @since   1.0.0
 	 */
-	public static function setValues(&$item)
+	public static function setValues(&$item, $lvlCounter = 0, $dLevel = 1)
 	{
-		$app          = JFactory::getApplication();
-		$menu         = $app->getMenu();
-		$item->parent = (boolean) $menu->getItems('parent_id', (int) $item->id, true);
+		$app  = JFactory::getApplication();
+		$menu = $app->getMenu();
+
+		if ($lvlCounter < $dLevel)
+		{
+			$item->parent = (boolean) $menu->getItems('parent_id', (int) $item->id, true);
+		}
+		else
+		{
+			$item->parent = false;
+		}
+
 		$item->active = false;
 		$item->flink  = $item->link;
 
