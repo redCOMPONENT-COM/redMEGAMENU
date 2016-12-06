@@ -72,6 +72,7 @@ class ModRedMegaMenuHelper
 		$items    = $menu->getItems('menutype', $params->get('menutype'));
 		$lastItem = 0;
 		$ignore   = $params->get('ignoreItems', array());
+		$dLevel   = $params->get('dropdownLevel', 1);
 
 		if ($items)
 		{
@@ -93,7 +94,7 @@ class ModRedMegaMenuHelper
 				}
 
 				$lastItem = $i;
-				self::setValues($item);
+				self::setValues($item, 1, $dLevel);
 
 				if (!in_array($item->id, $ignore))
 				{

@@ -17,7 +17,8 @@ JFactory::getDocument()->addScriptDeclaration('
 	$(document).ready(function () {
 		jQuery(\'#redshopbMegaMenu_' . $module->id . '\').shopbMegaMenu({
 			effect: \'' . $params->get('effect', 'fade') . '\', animation: \'' . $params->get('animation', 'none') . '\',
-			indicatorFirstLevel: \'' . $params->get('indicatorFirstLevel', '+') . '\', indicatorSecondLevel: \'' . $params->get('indicatorSecondLevel', '+') . '\',
+			indicatorFirstLevel: \'' . $params->get('indicatorFirstLevel', '+') . '\', indicatorSecondLevel: \'' .
+				$params->get('indicatorSecondLevel', '+') . '\',
 			showSpeed: ' . (int) $params->get('showSpeed', 300) . ', hideSpeed: ' . (int) $params->get('hideSpeed', 300) . ',
 			minWidth: ' . (int) $params->get('minWidth', 770) . '
 		});
@@ -40,98 +41,98 @@ if ($params->get('tag_id') != null)
 
 foreach ($list as $i => &$item)
 {
-    if (isset($item->mega))
-    {
-	    if (($item->mega && !$item->replaceItem) || !$item->mega)
-	    {
-		    $class = array('item-' . $item->id, 'level-item-' . $item->level);
+	if (isset($item->mega))
+	{
+		if (($item->mega && !$item->replaceItem) || !$item->mega)
+		{
+			$class = array('item-' . $item->id, 'level-item-' . $item->level);
 
-		    if (($item->id == $active_id) OR ($item->type == 'alias' AND $item->params->get('aliasoptions') == $active_id))
-		    {
-			    $class[] = 'current';
-		    }
+			if (($item->id == $active_id) OR ($item->type == 'alias' AND $item->params->get('aliasoptions') == $active_id))
+			{
+				$class[] = 'current';
+			}
 
-		    if (in_array($item->id, $path))
-		    {
-			    $class[] = 'active';
-		    }
-		    elseif ($item->type == 'alias')
-		    {
-			    $aliasToId = $item->params->get('aliasoptions');
+			if (in_array($item->id, $path))
+			{
+				$class[] = 'active';
+			}
+			elseif ($item->type == 'alias')
+			{
+				$aliasToId = $item->params->get('aliasoptions');
 
-			    if (count($path) > 0 && $aliasToId == $path[count($path) - 1])
-			    {
-				    $class[] = 'active';
-			    }
-			    elseif (in_array($aliasToId, $path))
-			    {
-				    $class[] = 'alias-parent-active';
-			    }
-		    }
+				if (count($path) > 0 && $aliasToId == $path[count($path) - 1])
+				{
+					$class[] = 'active';
+				}
+				elseif (in_array($aliasToId, $path))
+				{
+					$class[] = 'alias-parent-active';
+				}
+			}
 
-		    if ($item->type == 'separator')
-		    {
-			    $class[] = 'divider';
-		    }
+			if ($item->type == 'separator')
+			{
+				$class[] = 'divider';
+			}
 
-		    if ($item->deeper || isset($item->redShopBCategories))
-		    {
-			    $class[] = 'deeper';
-		    }
+			if ($item->deeper || isset($item->redShopBCategories))
+			{
+				$class[] = 'deeper';
+			}
 
-		    if ($item->parent)
-		    {
-			    $class[] = 'parent';
-		    }
+			if ($item->parent)
+			{
+				$class[] = 'parent';
+			}
 
-		    echo '<li class="' . implode(' ', $class) . '">';
+			echo '<li class="' . implode(' ', $class) . '">';
 
-		    // Render the menu item.
-		    switch ($item->type)
-		    {
-			    case 'separator':
-			    case 'url':
-			    case 'component':
-			    case 'heading':
-			    case 'module':
-				    include JModuleHelper::getLayoutPath('mod_redmegamenu', 'default_' . $item->type);
-				    break;
+			// Render the menu item.
+			switch ($item->type)
+			{
+				case 'separator':
+				case 'url':
+				case 'component':
+				case 'heading':
+				case 'module':
+					include JModuleHelper::getLayoutPath('mod_redmegamenu', 'default_' . $item->type);
+					break;
 
-			    default:
-				    include JModuleHelper::getLayoutPath('mod_redmegamenu', 'default_url');
-				    break;
-		    }
-	    }
+				default:
+					include JModuleHelper::getLayoutPath('mod_redmegamenu', 'default_url');
+					break;
+			}
+		}
 
-	    if ($item->mega)
-	    {
-		    $item->pluginParams = $params;
-		    $item->lastItem = 0;
-		    ModRedMegaMenuHelper::displayLevel($item->childs, $item, $item->displayLevel, $item->id);
-	    }
+		if ($item->mega)
+		{
+			$item->pluginParams = $params;
+			$item->lastItem = 0;
+			ModRedMegaMenuHelper::displayLevel($item->childs, $item, $item->displayLevel, $item->id);
+		}
 
-	    if (($item->mega && !$item->replaceItem) || !$item->mega)
-	    {
-		    // The next item is deeper.
-		    if ($item->deeper)
-		    {
-			    echo '<ul class="nav-child unstyled small dropdown">';
+		if (($item->mega && !$item->replaceItem) || !$item->mega)
+		{
+			// The next item is deeper.
+			if ($item->deeper)
+			{
+				echo '<ul class="nav-child unstyled small dropdown">';
 
-			    continue;
-		    }
+				continue;
+			}
 
-		    if ($item->shallower)
-		    {
-			    // The next item is shallower.
-			    echo '</li>';
-			    echo str_repeat('</ul></li>', $item->level_diff);
+			if ($item->shallower)
+			{
+				// The next item is shallower.
+				echo '</li>';
+				echo str_repeat('</ul></li>', $item->level_diff);
 
-			    continue;
-		    }
+				continue;
+			}
 
-		    // The next item is on the same level.
-		    echo '</li>';
-	    }
-    }
+			// The next item is on the same level.
+			echo '</li>';
+		}
+	}
 }
 ?></ul><div class="clr"></div></div><?php
