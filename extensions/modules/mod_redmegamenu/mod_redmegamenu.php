@@ -35,7 +35,7 @@ if ($active)
 
 $params->set('activePath', $active->tree);
 $params->set('activeId', $active->id);
-$list = ModRedMegaMenuHelper::getList($params);
+$list = (new ModRedMegaMenuHelper)->getList($params);
 
 if (count($list))
 {
